@@ -1,0 +1,194 @@
+name: AI Issue Priority
+
+on:
+  issues:
+    types:
+      - opened
+      - edited
+      - reopened
+
+permissions:
+  contents: read
+  issues: write
+  models: read
+
+concurrency:
+  group: ai-triage-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  triage:
+    name: Analyze bug priority
+
+    if: contains(github.event.issue.labels.*.name, 'bug')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare issue
+        shell: bash
+        run: |
+          jq -r '
+            "Title: " + .issue.title +
+            "\n\nAuthor: @" + .issue.user.login +
+            "\n\nBody:\n" + (.issue.body // "")
+          ' "$GITHUB_EVENT_PATH" > "$RUNNER_TEMP/pocket-alchemy-issue.txt"
+
+      - name: Analyze issue with GitHub Models
+        id: ai
+        uses: actions/ai-inference@v2
+        with:
+          prompt-file: .github/prompts/issue-priority.prompt.yml
+          file_input: |
+            issue: ${{ runner.temp }}/pocket-alchemy-issue.txt
+
+      - name: Apply priority
+        uses: actions/github-script@v7
+        env:
+          AI_RESPONSE: ${{ steps.ai.outputs.response }}
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issueNumber = context.issue.number;
+
+            let result;
+
+            try {
+              result = JSON.parse(process.env.AI_RESPONSE);
+            } catch (error) {
+              core.setFailed(
+                `The AI returned invalid JSON: ${process.env.AI_RESPONSE}`
+              );
+              return;
+            }
+
+            const allowedPriorities = [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ];
+
+            if (!allowedPriorities.includes(result.priority)) {
+              core.setFailed(`Invalid priority: ${result.priority}`);
+              return;
+            }
+
+            const labelDefinitions = {
+              "priority: critical": {
+                color: "8B0000",
+                description: "Game-breaking issue requiring immediate attention"
+              },
+              "priority: high": {
+                color: "D93F0B",
+                description: "Major bug with serious gameplay impact"
+              },
+              "priority: medium": {
+                color: "FBCA04",
+                description: "Reproducible issue with limited impact or a workaround"
+              },
+              "priority: low": {
+                color: "0E8A16",
+                description: "Minor, cosmetic, or rare issue"
+              },
+              "needs logs": {
+                color: "5319E7",
+                description: "The latest.log file is required"
+              }
+            };
+
+            async function ensureLabel(name) {
+              try {
+                await github.rest.issues.getLabel({
+                  owner,
+                  repo,
+                  name
+                });
+              } catch (error) {
+                if (error.status !== 404) {
+                  throw error;
+                }
+
+                await github.rest.issues.createLabel({
+                  owner,
+                  repo,
+                  name,
+                  color: labelDefinitions[name].color,
+                  description: labelDefinitions[name].description
+                });
+              }
+            }
+
+            for (const labelName of Object.keys(labelDefinitions)) {
+              await ensureLabel(labelName);
+            }
+
+            const issue = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number: issueNumber
+            });
+
+            const currentLabels = issue.data.labels.map(
+              label => typeof label === "string" ? label : label.name
+            );
+
+            const priorityLabels = allowedPriorities.map(
+              priority => `priority: ${priority}`
+            );
+
+            for (const label of priorityLabels) {
+              if (currentLabels.includes(label)) {
+                await github.rest.issues.removeLabel({
+                  owner,
+                  repo,
+                  issue_number: issueNumber,
+                  name: label
+                });
+              }
+            }
+
+            if (
+              !result.needs_logs &&
+              currentLabels.includes("needs logs")
+            ) {
+              await github.rest.issues.removeLabel({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                name: "needs logs"
+              });
+            }
+
+            const labelsToAdd = [
+              `priority: ${result.priority}`
+            ];
+
+            if (result.needs_logs) {
+              labelsToAdd.push("needs logs");
+            }
+
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: issueNumber,
+              labels: labelsToAdd
+            });
+
+            core.summary
+              .addHeading("Pocket Alchemy AI triage")
+              .addTable([
+                [
+                  { data: "Field", header: true },
+                  { data: "Result", header: true }
+                ],
+                ["Priority", result.priority],
+                ["Needs logs", String(result.needs_logs)],
+                ["Confidence", result.confidence],
+                ["Reason", result.reason]
+              ])
+              .write();
