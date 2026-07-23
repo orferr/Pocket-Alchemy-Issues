@@ -1,0 +1,92 @@
+name: Idea / Feature Request
+description: Suggest a new mechanic, item, potion, improvement, or feature
+title: "[Idea]: "
+labels:
+  - idea
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting an idea for Pocket Alchemy.
+
+        Please describe not only what should be added, but also how it should work and why it would improve the mod.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Idea category
+      options:
+        - Brewing mechanics
+        - Potions and effects
+        - Ingredients
+        - Items and storage
+        - Progression
+        - User interface
+        - Visuals and animations
+        - Sound
+        - Balance
+        - Compatibility
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Idea summary
+      description: Briefly explain what you want to add or change.
+      placeholder: Describe the main idea.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Explain why the current system needs this change or what experience it would improve.
+      placeholder: This idea would improve...
+    validations:
+      required: true
+
+  - type: textarea
+    id: mechanics
+    attributes:
+      label: How should it work?
+      description: Describe the proposed mechanic from the player's point of view.
+      placeholder: |
+        1. The player...
+        2. The system...
+        3. The result...
+    validations:
+      required: true
+
+  - type: textarea
+    id: fit
+    attributes:
+      label: Why does it fit Pocket Alchemy?
+      description: Explain how the idea matches the theme and direction of the mod.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative implementations
+      description: Describe any simpler or different versions of the idea.
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References, sketches, or examples
+      description: Attach concept art, screenshots, sketches, or examples from other games and mods.
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have checked that a similar idea has not already been submitted.
+          required: true
+        - label: I understand that submitting an idea does not guarantee its implementation.
+          required: true
