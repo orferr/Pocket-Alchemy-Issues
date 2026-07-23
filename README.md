@@ -9,7 +9,7 @@ The source code is currently not publicly available.
 ## Open Bug Reports
 
 <!-- BUGS-LIST:START -->
-_No open bug reports._
+- [#1](https://github.com/orferr/Pocket-Alchemy-Issues/issues/1) [Bug]: Registering too many potions
 <!-- BUGS-LIST:END -->
 
 ## Open Ideas
