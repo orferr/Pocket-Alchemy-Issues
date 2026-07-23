@@ -1,0 +1,118 @@
+name: Bug Report
+description: Report a bug, crash, or compatibility problem with Pocket Alchemy
+title: "[Bug]: "
+labels:
+  - bug
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a problem with Pocket Alchemy.
+
+        Please complete all required fields. The `latest.log` file is required even when the game does not crash because it may contain mod conflicts, warnings, loading errors, and other diagnostic information.
+
+  - type: input
+    id: minecraft-version
+    attributes:
+      label: Minecraft version
+      placeholder: "1.21.1"
+    validations:
+      required: true
+
+  - type: input
+    id: neoforge-version
+    attributes:
+      label: NeoForge version
+      placeholder: "21.1.x"
+    validations:
+      required: true
+
+  - type: input
+    id: pocket-alchemy-version
+    attributes:
+      label: Pocket Alchemy version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue description
+      description: Clearly describe what went wrong.
+      placeholder: Describe the problem and when it happens.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Provide the exact steps needed to reproduce the problem.
+      placeholder: |
+        1. Launch Minecraft
+        2. Enter a world
+        3. Use...
+        4. The problem appears
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: mods
+    attributes:
+      label: Relevant installed mods
+      description: List mods that may affect recipes, items, menus, rendering, or gameplay.
+      placeholder: |
+        JEI
+        EMI
+        Sodium
+        Other relevant mods
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Latest log
+      description: |
+        Attach `logs/latest.log` even if Minecraft did not crash.
+
+        This file is created during every Minecraft session and may contain mod conflicts, warnings, loading errors, and exact mod versions.
+
+        Also attach the crash report if Minecraft generated one.
+      placeholder: Drag and drop latest.log here. Do not paste the entire log directly into the text field.
+    validations:
+      required: true
+
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots or video
+      description: Attach screenshots or a video when they help demonstrate the issue.
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Confirmation
+      options:
+        - label: I am using the latest available version of Pocket Alchemy.
+          required: true
+        - label: I have checked that this issue has not already been reported.
+          required: true
+        - label: I understand that latest.log is required even when the game does not crash.
+          required: true
